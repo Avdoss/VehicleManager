@@ -5,5 +5,5 @@ import java.util.List;
 
 public interface Sorter
 {
-    <T> List<T> sort(List<T> items, Comparator<T> comparator);
+    <T> List<T> sort(List<T> items, Comparator<? super T> comparator);
 }
