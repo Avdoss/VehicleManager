@@ -4,8 +4,8 @@ public interface Vehicle
 {
     String getType();
     String getModel();
-    String getPower();
-    String getMileage();
+    int getPower();
+    int getMileage();
     String toString(String delimiter); // to write to a file
     String toString(); // for display on the screen
 }
