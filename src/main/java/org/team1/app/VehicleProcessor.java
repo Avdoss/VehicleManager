@@ -6,7 +6,9 @@ import java.util.List;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeListener;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
 public class VehicleProcessor implements PropertyChangeListener
 {
@@ -109,24 +111,25 @@ public class VehicleProcessor implements PropertyChangeListener
         int thread_number = Math.clamp(size / TARGET_ELEMENTS_PER_THREAD, MIN_THREAD_NUMBER, MAX_THREAD_NUMBER);
         int fragment_size = size / thread_number;
 
-        AtomicInteger counter = new AtomicInteger(0);
-        Thread[] threads = new Thread[thread_number];
+        FutureTask<Integer>[] tasks = new FutureTask[thread_number];
         for(int i = 0; i < thread_number; i++)
         {
             int start_index = i * fragment_size;
             int stop_index = (i == thread_number - 1) ? size - 1 : start_index + fragment_size - 1;
-            SearchTask task = new SearchTask(vehicles, vehicle, start_index, stop_index, counter);
-            threads[i] = new Thread(task);
-            threads[i].start();
+            SearchTask task = new SearchTask(vehicles, vehicle, start_index, stop_index);
+            tasks[i] = new FutureTask<>(task);
+            new Thread(tasks[i]).start();
         }
+        int result = 0;
+
         try {
-            for (Thread thread : threads)
-                thread.join();
-        } catch (InterruptedException e) {
-            notifyMessage("Error in counting the number of vehicles: the thread was interrupted");
+            for(FutureTask<Integer> task: tasks)
+                result += task.get();
+        } catch (InterruptedException | ExecutionException e) {
+            notifyMessage("Error in counting the number of vehicles: " + e.getMessage());
             return -1;
         }
-        return counter.get();
+        return result;
     }
 
     public void addEventListener(PropertyChangeListener listener)
@@ -157,28 +160,29 @@ public class VehicleProcessor implements PropertyChangeListener
 
     }
 
-    private static final class SearchTask implements Runnable
+    private static final class SearchTask implements Callable<Integer>
     {
         private final List<Vehicle> vehicles;
         private final Vehicle desiredVehicle;
         private final int start_index;
         private final int stop_index;
-        private final AtomicInteger counter;
 
-        public SearchTask(List<Vehicle> vehicles, Vehicle desiredVehicle, int start_index, int stop_index, AtomicInteger counter)
+        public SearchTask(List<Vehicle> vehicles, Vehicle desiredVehicle, int start_index, int stop_index)
         {
             this.vehicles = vehicles;
             this.desiredVehicle = desiredVehicle;
             this.start_index = start_index;
             this.stop_index = stop_index;
-            this.counter = counter;
         }
 
         @Override
-        public void run() {
+        public Integer call()
+        {
+            int result = 0;
             for(int index = start_index; index <= stop_index; index++)
                 if(vehicles.get(index).equals(desiredVehicle))
-                    counter.incrementAndGet();
+                    result++;
+            return result;
         }
     }
 }
