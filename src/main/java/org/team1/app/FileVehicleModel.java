@@ -1,11 +1,13 @@
 package org.team1.app;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.OpenOption;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 
 public class FileVehicleModel extends VehicleModel {
@@ -15,27 +17,25 @@ public class FileVehicleModel extends VehicleModel {
 
     @Override
     public void loadFromFile(String filePath) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-            String line;
+        try (Stream<String> stream = Files.lines(Paths.get(filePath))) {
 
-            while ((line = reader.readLine()) != null) {
-                if (line.trim().isEmpty()) {
-                    continue;
-                }
+            stream.map(String::trim)
+                    .filter(line -> !line.isEmpty())
+                    .forEach(line -> {
+                        String[] parts = line.split("\\s+");
+                        String type = parts[0];
+                        String[] params = Arrays.copyOfRange(parts, 1, parts.length);
 
-                String[] parts = line.split("\\s+");
+                        try {
+                            Vehicle vehicle = factory.createVehicle(type, params);
+                            this.addVehicle(vehicle);
+                        } catch (IllegalArgumentException e) {
+                            notifyMessage("Ошибка при обработке строки " + e.getMessage());
+                        }
+                    });
 
-                String type = parts[0];
-
-                String[] params = Arrays.copyOfRange(parts, 1, parts.length);
-
-                try {
-                    Vehicle vehicle = factory.createVehicle(type, params);
-                    this.addVehicle(vehicle);
-                } catch (IllegalArgumentException e) {
-                    notifyMessage("Ошибка при обработке строки " + e.getMessage());
-                }
-            }
+        } catch (InvalidPathException e) {
+            notifyMessage("Указан неправильный путь к файлу " + e.getMessage());
 
         } catch (IOException e) {
             notifyMessage("Ошибка при чтении файла " + e.getMessage());
