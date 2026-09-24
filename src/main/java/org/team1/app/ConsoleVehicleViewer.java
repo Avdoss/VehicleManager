@@ -25,11 +25,12 @@ public class ConsoleVehicleViewer implements PropertyChangeListener
         printAllCommand();
         while (true) {
             String input = scanner.nextLine();
-            if (input.equals("exit")) {
+            if (input.equals("\\exit")) {
                 break;
             }
             parseCommand(input);
         }
+        scanner.close();
     }
 
     @Override
@@ -49,14 +50,14 @@ public class ConsoleVehicleViewer implements PropertyChangeListener
         switch (command[0]) {
             case "\\clear":
                 if (command.length >= 2) {
-                    System.out.println("Неизвестная команда! Для очистки списка введите \\clear");
+                    System.out.println("Команда \\clear не принимает аргументы!");
                     break;
                 }
                 vehicleProcessor.clear();
                 break;
             case "\\show":
                 if (command.length >= 2) {
-                    System.out.println("Неизвестная команда! Для отображения всех транспортных средств введите \\clear");
+                    System.out.println("Команда \\show не принимает аргументы!");
                     break;
                 }
                 showVehicles();
@@ -64,6 +65,7 @@ public class ConsoleVehicleViewer implements PropertyChangeListener
             case "\\sort": sortVehicles(command); break;
             case "\\add": addVehicle(command); break;
             case "\\add_random": addRandomVehicles(command); break;
+            case "\\find": findVehicle(command); break;
             case "\\load_file":
                 if (command.length < 2) {
                     System.out.println("Введите путь файла!");
@@ -83,7 +85,8 @@ public class ConsoleVehicleViewer implements PropertyChangeListener
                 break;
             case "\\help":
                 if (command.length >= 2) {
-                    System.out.println("Неизвестная команда! Для отображения всех доступных команд введите \\help");
+                    System.out.println("Команда \\help не принимает аргументы!");
+                    break;
                 }
                 printAllCommand();
                 break;
@@ -98,6 +101,7 @@ public class ConsoleVehicleViewer implements PropertyChangeListener
                 \\add <тип> <аргументы>  <- добавить транспортное средство
                 \\add_random <количество>  <- добавить случайное транспортное средство
                 \\show  <- показать транспортные средства
+                \\find <тип> <аргументы> <- подсчитать транспортные средства
                 \\sort <поле>  <- сортировка по полю
                 \\clear <- очистить список
                 \\load_file <путь>  <- загрузить из файла
@@ -122,8 +126,10 @@ public class ConsoleVehicleViewer implements PropertyChangeListener
             System.out.println("Введите одно поле для сортировки!");
             return;
         }
-        vehicleProcessor.sortVehicles(command[1]);
-        showVehicles();
+        List<Vehicle> sortedVehicle = vehicleProcessor.sortVehicles(command[1]);
+        for (Vehicle vehicle: sortedVehicle) {
+            vehicle.toString();
+        }
     }
 
     private void addVehicle(String[] command) {
@@ -139,11 +145,29 @@ public class ConsoleVehicleViewer implements PropertyChangeListener
 
     private void addRandomVehicles(String[] command) {
         if (command.length < 2) {
-            System.out.println("Введите количество добавляемого транспортного средства");
+            System.out.println("Укажите количество транспортных средств!");
             return;
         } else if (command.length >= 3) {
-            System.out.println("Неизвестная команда! Для добавления случайного транспортного средства введите \\add_random <количество>");
+            System.out.println("Неизвестная команда! Используйте: \\add_random <количество>");
         }
-        vehicleProcessor.addRandomVehicles(Integer.parseInt(command[1]));
+        try {
+            vehicleProcessor.addRandomVehicles(Integer.parseInt(command[1]));
+        } catch (NumberFormatException e) {
+            System.out.println("Неверный формат числа!");
+        }
+    }
+
+    private void findVehicle(String[] command) {
+        if (command.length < 2) {
+            System.out.println("Укажите тип транспортного средства и его аргументы!");
+            return;
+        } else if (command.length < 3) {
+            System.out.println("Укажите аргументы транспортного средства!");
+            return;
+        }
+        int count = vehicleProcessor.getVehicleNumber(command[1], Arrays.copyOfRange(command, 2, command.length));
+        if (count != -1) {
+            System.out.println("Найдено транспортных средств: " + count);
+        }
     }
 }
