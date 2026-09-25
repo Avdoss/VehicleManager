@@ -1,10 +1,9 @@
 package org.team1.app;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.OpenOption;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
@@ -44,6 +43,16 @@ public class FileVehicleModel extends VehicleModel {
 
     @Override
     public void saveToFile(List<Vehicle> vehicles, String filePath, OpenOption option) {
+        boolean append = (option == StandardOpenOption.APPEND);
 
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath, append))) {
+            for (Vehicle vehicle : vehicles) {
+                String line = vehicle.toString(" ");
+                writer.write(line);
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            notifyMessage("Ошибка при записи в файл " + e.getMessage());
+        }
     }
 }
