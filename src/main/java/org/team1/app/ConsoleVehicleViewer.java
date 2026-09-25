@@ -71,17 +71,17 @@ public class ConsoleVehicleViewer implements PropertyChangeListener
                     System.out.println("Введите путь файла!");
                     break;
                 }
-                vehicleProcessor.loadFromFile(String.join(" ", (Arrays.copyOfRange(command, 1, command.length)))); // если в пути есть пробелы
+                vehicleProcessor.loadFromFile(getFilePath(input, command)); // если в пути есть пробелы
                 break;
             case "\\save_file":
                 if (command.length < 2) {
                     System.out.println("Введите путь файла!");
                     break;
                 } else if (command.length >= 3 && command[command.length - 1].equals("-a")) {
-                    vehicleProcessor.saveToFile(String.join(" ", (Arrays.copyOfRange(command, 1, command.length - 1))), StandardOpenOption.APPEND);
+                    vehicleProcessor.saveToFile(getFilePath(input, command), StandardOpenOption.APPEND);
                     break;
                 }
-                vehicleProcessor.saveToFile(String.join(" ", (Arrays.copyOfRange(command, 1, command.length))), StandardOpenOption.CREATE);
+                vehicleProcessor.saveToFile(getFilePath(input, command), StandardOpenOption.CREATE);
                 break;
             case "\\help":
                 if (command.length >= 2) {
@@ -104,7 +104,7 @@ public class ConsoleVehicleViewer implements PropertyChangeListener
                 \\find <тип> <аргументы> <- подсчитать транспортные средства
                 \\sort <поле>  <- сортировка по полю
                 \\clear <- очистить список
-                \\load_file <путь>  <- загрузить из файла
+                \\load_file "<путь>"  <- загрузить из файла
                 \\save_file <путь>  <- сохранить в файл
                 \\save_file <путь> -a  <- добавить в конец файла
                 \\exit  <- выход
@@ -114,7 +114,7 @@ public class ConsoleVehicleViewer implements PropertyChangeListener
     private void showVehicles() {
         List<Vehicle> vehicles = vehicleProcessor.getVehicles();
         for (Vehicle vehicle: vehicles) {
-            vehicle.toString();
+            System.out.println(vehicle.toString());
         }
     }
 
@@ -127,9 +127,12 @@ public class ConsoleVehicleViewer implements PropertyChangeListener
             return;
         }
         List<Vehicle> sortedVehicle = vehicleProcessor.sortVehicles(command[1]);
-        for (Vehicle vehicle: sortedVehicle) {
-            vehicle.toString();
+        if (sortedVehicle != null) {
+            for (Vehicle vehicle: sortedVehicle) {
+                System.out.println(vehicle.toString());
+            }
         }
+
     }
 
     private void addVehicle(String[] command) {
@@ -169,5 +172,12 @@ public class ConsoleVehicleViewer implements PropertyChangeListener
         if (count != -1) {
             System.out.println("Найдено транспортных средств: " + count);
         }
+    }
+
+    private String getFilePath(String input, String[] command) {
+        if (input.contains("\"")) {
+            return input.split("\"")[1];
+        }
+        return command[1];
     }
 }
