@@ -55,7 +55,11 @@ public class VehicleProcessor implements PropertyChangeListener
 
     public void addRandomVehicles(int count)
     {
+        if(model.factory.getAvailableTypes().isEmpty())
+            return;
 
+        for(int i = 0; i < count; i++)
+            model.addVehicle(model.factory.createRandomVehicle());
     }
 
     public List<Vehicle> getVehicles()
