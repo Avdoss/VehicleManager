@@ -21,8 +21,9 @@ public class VehicleProcessor implements PropertyChangeListener
 
     public VehicleProcessor(VehicleModel model)
     {
-        this.model = model;
         this.pcs = new PropertyChangeSupport(this);
+        this.model = model;
+        this.model.addMessageListener(this);
     }
 
     public void clear()
