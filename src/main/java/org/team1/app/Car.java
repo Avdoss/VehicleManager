@@ -2,7 +2,7 @@ package org.team1.app;
 
 import java.util.Objects;
 
-public class Car implements Vehicle {
+public final class Car implements Vehicle {
     private final String type;
     private final String model;
     private final int power;
