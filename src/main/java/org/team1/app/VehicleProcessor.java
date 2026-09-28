@@ -29,6 +29,7 @@ public class VehicleProcessor implements PropertyChangeListener
     public void clear()
     {
         model.clear();
+        notifyMessage("Vehicle data has been deleted");
     }
 
     public void loadFromFile(String filePath)
@@ -38,7 +39,7 @@ public class VehicleProcessor implements PropertyChangeListener
 
     public void saveToFile(String filePath, OpenOption option)
     {
-        if (prevQueryResult != null)
+        if (prevQueryResult == null)
             prevQueryResult = model.getVehicles();
         model.saveToFile(prevQueryResult, filePath, option);
     }
@@ -61,6 +62,7 @@ public class VehicleProcessor implements PropertyChangeListener
 
         for(int i = 0; i < count; i++)
             model.addVehicle(model.factory.createRandomVehicle());
+        notifyMessage(String.format("Added %d random vehicles", count));
     }
 
     public List<Vehicle> getVehicles()
@@ -82,7 +84,7 @@ public class VehicleProcessor implements PropertyChangeListener
             case "power":
                 comparator = new PowerComparator();
                 break;
-            case "mileage:":
+            case "mileage":
                 comparator = new MileageComparator();
                 break;
             default:
@@ -162,6 +164,16 @@ public class VehicleProcessor implements PropertyChangeListener
 
     private void selectSorter(int count)
     {
+        if (count < 50)
+        {
+            if(sorter == null || sorter.getClass() != InsertionSorter.class)
+                sorter = new InsertionSorter();
+        }
+        else
+        {
+            if(sorter == null || sorter.getClass() != HeapSorter.class)
+                sorter = new HeapSorter();
+        }
 
     }
 
