@@ -1,6 +1,7 @@
 package org.team1.app;
 
 import java.util.Objects;
+import java.util.Set;
 
 public final class Car implements Vehicle {
     private final String type;
@@ -67,6 +68,13 @@ public final class Car implements Vehicle {
     }
 
     public static class CarBuilder {
+        public static final Set<String> MODELS = Set.of(
+                "Audi", "BMW", "Chery", "Chevrolet", "Citroen", "Daewoo", "Ford",
+                "Honda", "Hyundai", "Kia", "Lexus", "Mazda", "Mercedes-Benz",
+                "Mitsubishi", "Nissan", "Opel", "Peugeot", "Renault", "Skoda",
+                "Subaru", "Suzuki", "Toyota", "Volkswagen", "Volvo", "Lada"
+        );
+
         private String type;
         private String model;
         private int power;
@@ -98,6 +106,10 @@ public final class Car implements Vehicle {
             }
             if (model == null || model.isBlank()) {
                 throw new IllegalArgumentException("Модель не может быть пустой");
+            }
+            if (!MODELS.contains(model)) {
+                throw new IllegalArgumentException(
+                        "Недопустимая модель: " + model + ". Допустимые модели: " + MODELS);
             }
             if (power <= 0) {
                 throw new IllegalArgumentException("Мощность должна быть положительной, сейчас: " + power);
