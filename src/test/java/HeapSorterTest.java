@@ -1,5 +1,5 @@
-package org.team1.app;
 
+import org.team1.app.HeapSorter;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
