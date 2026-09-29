@@ -1,6 +1,7 @@
 package org.team1.app;
 
 import java.nio.file.OpenOption;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.beans.PropertyChangeEvent;
@@ -9,6 +10,7 @@ import java.beans.PropertyChangeListener;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
+import java.util.function.Predicate;
 
 public class VehicleProcessor implements PropertyChangeListener
 {
@@ -72,7 +74,13 @@ public class VehicleProcessor implements PropertyChangeListener
 
     public List<Vehicle> sortVehicles(String field)
     {
+        return sortVehicles(field, SORTING_OPTION.ALL);
+    }
+
+    public List<Vehicle> sortVehicles(String field, SORTING_OPTION option)
+    {
         Comparator<Vehicle> comparator;
+        Predicate<Vehicle> predicate = null;
         switch (field)
         {
             case "type":
@@ -83,17 +91,39 @@ public class VehicleProcessor implements PropertyChangeListener
                 break;
             case "power":
                 comparator = new PowerComparator();
+                if (option == SORTING_OPTION.EVEN)
+                    predicate = x -> x.getPower() % 2 == 0;
+                else if (option == SORTING_OPTION.ODD)
+                    predicate = x -> x.getPower() % 2 != 0;
                 break;
             case "mileage":
                 comparator = new MileageComparator();
+                if (option == SORTING_OPTION.EVEN)
+                    predicate = x -> x.getMileage() % 2 == 0;
+                else if (option == SORTING_OPTION.ODD)
+                    predicate = x -> x.getMileage() % 2 != 0;
                 break;
             default:
                 notifyMessage("Sort error: invalid field name - " + field);
                 return null;
         }
         List<Vehicle> vehicles = model.getVehicles();
-        selectSorter(vehicles.size());
-        prevQueryResult = sorter.sort(vehicles, comparator);
+        List<Vehicle> vehicles_for_sorting;
+        if (predicate != null)
+            vehicles_for_sorting = vehicles.stream().filter(predicate).toList();
+        else
+            vehicles_for_sorting = vehicles;
+        setSortingStrategy(vehicles_for_sorting.size());
+        List<Vehicle> sorted_vehicles = sorter.sort(vehicles_for_sorting, comparator);
+        if (predicate != null)
+        {
+            int count = 0;
+            prevQueryResult = new ArrayList<>();
+            for(Vehicle vehicle: vehicles)
+                prevQueryResult.add(predicate.test(vehicle) ? sorted_vehicles.get(count++) : vehicle);
+        }
+        else
+            prevQueryResult = sorted_vehicles;
         return List.copyOf(prevQueryResult);
     }
 
@@ -162,7 +192,7 @@ public class VehicleProcessor implements PropertyChangeListener
         this.prevMessage = message;
     }
 
-    private void selectSorter(int count)
+    private void setSortingStrategy(int count)
     {
         if (count < 50)
         {
@@ -201,5 +231,12 @@ public class VehicleProcessor implements PropertyChangeListener
                     result++;
             return result;
         }
+    }
+
+    public enum SORTING_OPTION
+    {
+        ALL,
+        EVEN,
+        ODD
     }
 }
