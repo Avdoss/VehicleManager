@@ -121,30 +121,19 @@ public class ConsoleVehicleViewer implements PropertyChangeListener
         if (command.length < 2) {
             System.out.println("Укажите поле для сортировки!");
             return;
-        } else if (command.length == 3 && command[2].equals("--even")) {
-            List<Vehicle> sortedVehicle = vehicleProcessor.sortVehicles(command[1], VehicleProcessor.SORTING_OPTION.EVEN);
-            if (sortedVehicle != null) {
-                for (Vehicle vehicle: sortedVehicle) {
-                    System.out.println(vehicle.toString());
-                }
-            }
-            return;
-        } else if (command.length == 3 && command[2].equals("--odd")) {
-            List<Vehicle> sortedVehicle = vehicleProcessor.sortVehicles(command[1], VehicleProcessor.SORTING_OPTION.ODD);
-            if (sortedVehicle != null) {
-                for (Vehicle vehicle: sortedVehicle) {
-                    System.out.println(vehicle.toString());
-                }
-            }
-            return;
         }
-        List<Vehicle> sortedVehicle = vehicleProcessor.sortVehicles(command[1]);
+        VehicleProcessor.SORTING_OPTION option = VehicleProcessor.SORTING_OPTION.ALL;
+        if (command.length == 3 && command[2].equals("--even")) {
+            option = VehicleProcessor.SORTING_OPTION.EVEN;
+        } else if (command.length == 3 && command[2].equals("--odd")) {
+            option = VehicleProcessor.SORTING_OPTION.ODD;
+        }
+        List<Vehicle> sortedVehicle = vehicleProcessor.sortVehicles(command[1], option);
         if (sortedVehicle != null) {
             for (Vehicle vehicle: sortedVehicle) {
                 System.out.println(vehicle.toString());
             }
         }
-
     }
 
     private void addVehicle(String[] command) {
