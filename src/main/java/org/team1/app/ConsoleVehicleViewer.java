@@ -99,14 +99,13 @@ public class ConsoleVehicleViewer implements PropertyChangeListener
         System.out.println("""
                 Доступные команды:
                 \\add <тип> <аргументы>  <- добавить транспортное средство
-                \\add_random <количество>  <- добавить случайное транспортное средство
+                \\add_random <количество>  <- добавить случайные транспортные средства
                 \\show  <- показать транспортные средства
                 \\find <тип> <аргументы> <- подсчитать транспортные средства
-                \\sort <поле>  <- сортировка по полю
-                \\clear <- очистить список
-                \\load_file "<путь>"  <- загрузить из файла
-                \\save_file <путь>  <- сохранить в файл
-                \\save_file <путь> -a  <- добавить в конец файла
+                \\sort <поле> [--even|--odd] <- сортировка по полю. С опциями --even или --odd сортируются только четные или нечетные числовые поля.
+                \\clear <- очистить исходный список
+                \\load_file <путь>  <- загрузить данные из файла
+                \\save_file <путь> [-a]  <- сохранить в файл результат последней сортировки. Если сортировка не выполнялась, сохраняется исходный список. Опция -a добавляет данные в файл.
                 \\exit  <- выход
                 """);
     }
@@ -122,8 +121,21 @@ public class ConsoleVehicleViewer implements PropertyChangeListener
         if (command.length < 2) {
             System.out.println("Укажите поле для сортировки!");
             return;
-        } else if (command.length >= 3) {
-            System.out.println("Введите одно поле для сортировки!");
+        } else if (command.length == 3 && command[2].equals("--even")) {
+            List<Vehicle> sortedVehicle = vehicleProcessor.sortVehicles(command[1], VehicleProcessor.SORTING_OPTION.EVEN);
+            if (sortedVehicle != null) {
+                for (Vehicle vehicle: sortedVehicle) {
+                    System.out.println(vehicle.toString());
+                }
+            }
+            return;
+        } else if (command.length == 3 && command[2].equals("--odd")) {
+            List<Vehicle> sortedVehicle = vehicleProcessor.sortVehicles(command[1], VehicleProcessor.SORTING_OPTION.ODD);
+            if (sortedVehicle != null) {
+                for (Vehicle vehicle: sortedVehicle) {
+                    System.out.println(vehicle.toString());
+                }
+            }
             return;
         }
         List<Vehicle> sortedVehicle = vehicleProcessor.sortVehicles(command[1]);
